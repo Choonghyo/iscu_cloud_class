@@ -1,6 +1,7 @@
 
 import { createHash } from "node:crypto";
 import { NextResponse } from "next/server";
+import { saveUrl } from "../../../lib/db";
 
 export const runtime = "nodejs";
 
@@ -164,6 +165,11 @@ export async function POST(request) {
      * shortCode와 shortUrl을 생성합니다.
      */
     const shortCode = createShortCode(originalUrl);
+    console.log("DB 저장 시작");
+
+    await saveUrl(shortCode, originalUrl);
+
+    console.log("DB 저장 성공");
     const baseUrl = new URL(request.url).origin;
 
 
@@ -182,7 +188,11 @@ export async function POST(request) {
       { status: 201 }
     );
 
-  } catch {
+  } catch (error) {
+  console.error("API ERROR:", error);
+
+  /*
+   * 7. 서버 내부 오류
 
     /*
      * 7. 서버 내부 오류
@@ -203,3 +213,4 @@ export async function POST(request) {
     );
   }
 }
+console.log("DB 환경변수:", Boolean(process.env.DATABASE_URL));
