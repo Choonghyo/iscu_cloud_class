@@ -13,8 +13,8 @@ function validateUrl(value) {
   }
 
   // TODO 2: 최대 길이 검증
-  if(trimmedUrl.length > MAX_URL_LENGTH){
-    return "URL은 $(MAX_URL_LENGTH)자 이하로 입력해주세요.";
+  if (trimmedUrl.length > MAX_URL_LENGTH) {
+    return `URL은 ${MAX_URL_LENGTH}자 이하로 입력해주세요.`;
   }
 
 // TODO 3: http:// 또는 https:// 시작 여부 검증
@@ -60,16 +60,33 @@ export default function Home() {
       return;
     }
 
-    setIsLoading(true);
+   setIsLoading(true);
+   try {
+      const response = await fetch("/api/shorten", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          originalUrl,
+        }),
+      });
 
-    await new Promise((resolve) => {
-      setTimeout(resolve, 800);
-    });
+      const data = await response.json();
 
-    setResult("입력값 검증이 완료되었습니다. 아직 Backend API와 연결되진 않았습니다.");
-    setIsLoading(false);
+      if (!response.ok) {
+        setError(data.error?.message || "요청 처리에 실패했습니다.");
+        return;
+      }
+
+      setResult(data.shortUrl);
+    } catch {
+      setError("서버에 연결할 수 없습니다.");
+    } finally {
+      setIsLoading(false);
+    }
   }
-
+  
   return (
     <main className="page-shell">
       <section className="url-card" aria-labelledby="page-title">
@@ -127,8 +144,8 @@ export default function Home() {
         <aside className="practice-note">
           <span aria-hidden="true">✓</span>
           <p>
-            이번 주에는 <code>validateUrl</code> 함수를 완성해 입력값 검증을
-            구현합니다.
+            이번 주에는 <code>Route Handler</code>를 만들고 Backend API와
+            연결합니다.
           </p>
         </aside>
       </section>
