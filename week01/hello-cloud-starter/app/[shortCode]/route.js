@@ -1,4 +1,5 @@
 import { findUrlByShortCode } from "../../lib/db";
+import { recordClick } from "../../lib/stats";
 
 export async function GET(request, { params }) {
   const { shortCode } = await params;
@@ -8,9 +9,14 @@ export async function GET(request, { params }) {
 
   // 원본 URL이 존재하지 않으면 404 반환
   if (!originalUrl) {
-    return new Response("Not Found", {
-      status: 404,
-    });
+  console.warn("Short URL not found", { shortCode });
+  return new Response("Not Found", { status: 404 });
+  }
+
+  try {
+    await recordClick(shortCode);
+  } catch (error) {
+    console.error("Failed to record click", { shortCode, error });
   }
 
   return new Response(null, {
