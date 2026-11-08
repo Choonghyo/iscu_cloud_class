@@ -156,7 +156,25 @@ export async function POST(request) {
         { status: 400 }
       );
     }
+    /*
+    * 자기 서비스 URL 단축 방지
+    * 현재 서비스와 동일한 호스트의 URL은
+    * 다시 단축하지 않습니다.
+    */
+    const serviceHost = new URL(request.url).host.toLowerCase();
+    const targetHost = parsedUrl.host.toLowerCase();
 
+    if (targetHost === serviceHost) {
+      return NextResponse.json(
+        {
+          error: {
+            code: "SELF_URL_NOT_ALLOWED",
+            message: "Cannot shorten this service's own URL.",
+          },
+        },
+        { status: 400 }
+      );
+    }
 
     /*
      * 6. Short URL 생성
@@ -190,10 +208,6 @@ export async function POST(request) {
 
   } catch (error) {
   console.error("API ERROR:", error);
-
-  /*
-   * 7. 서버 내부 오류
-
     /*
      * 7. 서버 내부 오류
      *
